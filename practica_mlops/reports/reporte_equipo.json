@@ -1,0 +1,61 @@
+{
+  "equipo": "Equipo 7 - Raúl, Enrique, Erick",
+  "timestamp": "2026-04-15T22:07:48.928558",
+  "metricas_baseline": {
+    "accuracy": 0.4956,
+    "precision": 0.8462,
+    "recall": 0.0466,
+    "f1": 0.0884
+  },
+  "metricas_con_fix": {
+    "accuracy": 0.6844,
+    "precision": 0.8615,
+    "recall": 0.4746,
+    "f1": 0.612
+  },
+  "mejora": {
+    "accuracy": 0.1888,
+    "precision": 0.0153,
+    "recall": 0.428,
+    "f1": 0.5236
+  },
+  "semanas_evaluadas": [
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52
+  ],
+  "drift_detectado": {
+    "precio_unitario": {
+      "p_value": 1.7637225422716986e-41,
+      "statistic": 0.37472222222222223,
+      "drift": true
+    },
+    "descuento_pct": {
+      "p_value": 1.322463038466996e-41,
+      "statistic": 0.37527777777777777,
+      "drift": true
+    },
+    "inventario_prev": {
+      "p_value": 5.056118966093877e-19,
+      "statistic": 0.2538888888888889,
+      "drift": true
+    },
+    "es_temporada_alta": {
+      "p_value": 4.5719935772230425e-86,
+      "statistic": 0.5333333333333333,
+      "drift": true
+    }
+  }
+}

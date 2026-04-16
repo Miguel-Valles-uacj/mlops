@@ -1,0 +1,5 @@
+metrica,baseline,fix,equipo
+accuracy,0.4956,0.6844,"Equipo 7 - Raúl, Enrique, Erick"
+precision,0.8462,0.8615,"Equipo 7 - Raúl, Enrique, Erick"
+recall,0.0466,0.4746,"Equipo 7 - Raúl, Enrique, Erick"
+f1,0.0884,0.612,"Equipo 7 - Raúl, Enrique, Erick"
