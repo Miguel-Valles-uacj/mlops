@@ -26,8 +26,7 @@ def get_team_name() -> str:
     Retorna el nombre de tu equipo.
     Ejemplo: return "Equipo 3 — Ana, Luis, Diego"
     """
-    # TODO: cambia esto con el nombre de tu equipo
-    return "Equipo N"
+    return "Equipo 3 — Omar, Villedo, Blanca"
 
 
 # =============================================================================
@@ -57,13 +56,20 @@ def detect_drift(df_train: pd.DataFrame, df_prod: pd.DataFrame) -> dict:
             ...
         }
     """
-    # TODO: implementa el test KS para cada columna numerica
-    # Pista: usa stats.ks_2samp(df_train[col], df_prod[col])
-    # Pista: las columnas numericas son: precio_unitario, descuento_pct,
-    #        inventario_prev, es_temporada_alta
+    columnas_numericas = ["precio_unitario", "descuento_pct", "inventario_prev", "es_temporada_alta"]
     resultado = {}
 
-    raise NotImplementedError("Implementa detect_drift()")
+    for col in columnas_numericas:
+        if col not in df_train.columns or col not in df_prod.columns:
+            raise ValueError(f"La columna '{col}' no existe en uno de los DataFrames.")
+
+        stat, p_value = stats.ks_2samp(df_train[col].dropna(), df_prod[col].dropna())
+
+        resultado[col] = {
+            "p_value":   round(float(p_value), 6),
+            "statistic": round(float(stat), 6),
+            "drift":     bool(p_value < 0.05),
+        }
 
     return resultado
 
@@ -94,14 +100,28 @@ def fix_data(df_prod: pd.DataFrame, df_train: pd.DataFrame) -> pd.DataFrame:
     """
     df = df_prod.copy()
 
-    # TODO: implementa las correcciones aqui
-    # Pista 1: para detectar si el precio esta en USD, compara el rango de
-    #          precio_unitario en produccion vs entrenamiento
-    # Pista 2: el tipo de cambio aproximado es 17.5 pesos por dolar
-    # Pista 3: para la temporada alta, revisa la columna es_temporada_alta
-    #          y los valores de semana
+    # Validacion basica
+    if "precio_unitario" not in df.columns:
+        raise ValueError("El DataFrame de produccion no contiene la columna 'precio_unitario'.")
+    if "es_temporada_alta" not in df.columns:
+        raise ValueError("El DataFrame de produccion no contiene la columna 'es_temporada_alta'.")
+    if "semana" not in df.columns:
+        raise ValueError("El DataFrame de produccion no contiene la columna 'semana'.")
 
-    raise NotImplementedError("Implementa fix_data()")
+    # --- Falla 1: precio_unitario en USD en vez de MXN ---
+    # Si la mediana de produccion es menor al 30% de la mediana de entrenamiento,
+    # los precios estan en dolares y hay que convertirlos a pesos.
+    TIPO_CAMBIO = 17.5
+    mediana_train = df_train["precio_unitario"].median()
+    mediana_prod  = df["precio_unitario"].median()
+
+    if mediana_prod < mediana_train * 0.30:
+        df["precio_unitario"] = df["precio_unitario"] * TIPO_CAMBIO
+
+    # --- Falla 2: es_temporada_alta no marcada en semanas 45-52 ---
+    # El modelo fue entrenado sin datos de temporada alta (siempre 0),
+    # pero en produccion las semanas 45-52 deben tener es_temporada_alta = 1.
+    df.loc[df["semana"].between(45, 52), "es_temporada_alta"] = 0
 
     return df
 
@@ -134,14 +154,14 @@ def check_model_health(metrics: dict) -> str:
     recall    = metrics.get("recall", 0)
     f1        = metrics.get("f1", 0)
 
-    # TODO: define tus umbrales y retorna el estado correspondiente
-    # Ejemplo de estructura (cambia los valores):
-    #
-    # if f1 >= ???:
-    #     return "OK"
-    # elif f1 >= ???:
-    #     return "WARNING"
-    # else:
-    #     return "CRITICAL"
+    # Umbrales basados en las metricas originales del modelo (Accuracy ~0.91, F1 ~0.89)
+    # OK      : f1 >= 0.80 y accuracy >= 0.85  → modelo funciona bien
+    # WARNING : f1 >= 0.60 o accuracy >= 0.70  → degradacion leve, vigilar
+    # CRITICAL: cualquier valor por debajo      → falla grave, intervenir
 
-    raise NotImplementedError("Implementa check_model_health() con tus umbrales justificados")
+    if f1 >= 0.80 and accuracy >= 0.85:
+        return "OK"
+    elif f1 >= 0.60 or accuracy >= 0.70:
+        return "WARNING"
+    else:
+        return "CRITICAL"
