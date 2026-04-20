@@ -1,0 +1,5 @@
+equipo,metrica,baseline,con_fix,mejora
+"Equipo 1 — Luis Flores, Evelyn Bravo, Rogelio Saucedo",Accuracy,0.4956,0.6422,0.1466
+"Equipo 1 — Luis Flores, Evelyn Bravo, Rogelio Saucedo",Precision,0.8462,0.8713,0.0251
+"Equipo 1 — Luis Flores, Evelyn Bravo, Rogelio Saucedo",Recall,0.0466,0.3729,0.3263
+"Equipo 1 — Luis Flores, Evelyn Bravo, Rogelio Saucedo",F1,0.0884,0.5223,0.4339

@@ -26,8 +26,7 @@ def get_team_name() -> str:
     Retorna el nombre de tu equipo.
     Ejemplo: return "Equipo 3 — Ana, Luis, Diego"
     """
-    # TODO: cambia esto con el nombre de tu equipo
-    return "Equipo N"
+    return "Equipo 1 — Luis Flores, Evelyn Bravo, Rogelio Saucedo"
 
 
 # =============================================================================
@@ -57,13 +56,25 @@ def detect_drift(df_train: pd.DataFrame, df_prod: pd.DataFrame) -> dict:
             ...
         }
     """
-    # TODO: implementa el test KS para cada columna numerica
-    # Pista: usa stats.ks_2samp(df_train[col], df_prod[col])
-    # Pista: las columnas numericas son: precio_unitario, descuento_pct,
-    #        inventario_prev, es_temporada_alta
     resultado = {}
 
-    raise NotImplementedError("Implementa detect_drift()")
+    columnas_numericas = ["precio_unitario", "descuento_pct",
+                          "inventario_prev", "es_temporada_alta"]
+
+    for col in columnas_numericas:
+        if col not in df_train.columns or col not in df_prod.columns:
+            continue
+
+        stat, p_value = stats.ks_2samp(
+            df_train[col].dropna().values,
+            df_prod[col].dropna().values
+        )
+
+        resultado[col] = {
+            "p_value":   round(float(p_value), 4),
+            "statistic": round(float(stat), 4),
+            "drift":     bool(p_value < 0.05),
+        }
 
     return resultado
 
@@ -94,14 +105,31 @@ def fix_data(df_prod: pd.DataFrame, df_train: pd.DataFrame) -> pd.DataFrame:
     """
     df = df_prod.copy()
 
-    # TODO: implementa las correcciones aqui
-    # Pista 1: para detectar si el precio esta en USD, compara el rango de
-    #          precio_unitario en produccion vs entrenamiento
-    # Pista 2: el tipo de cambio aproximado es 17.5 pesos por dolar
-    # Pista 3: para la temporada alta, revisa la columna es_temporada_alta
-    #          y los valores de semana
+    # ── Falla 2: precio_unitario en USD en vez de MXN ────────────────────────
+    # No todos los registros tienen el precio en USD, solo algunos.
+    # Lo detectamos comparando contra el minimo del dataset de entrenamiento:
+    # si un precio esta por debajo del minimo posible en MXN (segun train),
+    # significa que llego en dolares y hay que convertirlo.
+    # Pista del enunciado: "compara el rango de precio_unitario en produccion
+    # vs entrenamiento" — aqui comparamos el minimo del rango.
+    min_precio_train = df_train["precio_unitario"].min()
 
-    raise NotImplementedError("Implementa fix_data()")
+    if min_precio_train <= 0:
+        raise ValueError(
+            "El minimo de precio_unitario en entrenamiento es cero o negativo. "
+            "Los datos de entrenamiento son invalidos."
+        )
+
+    mask_usd = df["precio_unitario"] < min_precio_train
+    df.loc[mask_usd, "precio_unitario"] = df.loc[mask_usd, "precio_unitario"] * 17.5
+
+    # ── Falla 1: drift estacional ─────────────────────────────────────────────
+    # El diagnostico confirma que es_temporada_alta ya esta en 1 para semanas
+    # 45-52 en produccion — esos valores son correctos y no necesitan cambio.
+    # La raiz del drift es que el modelo fue entrenado con es_temporada_alta=0
+    # en todos sus datos (semanas 1-40 no tienen temporada alta), por lo que
+    # no aprendio patrones de esa variable. El fix real es corregir el precio
+    # para que el modelo pueda clasificar correctamente usando las otras features.
 
     return df
 
@@ -128,20 +156,22 @@ def check_model_health(metrics: dict) -> str:
 
     IMPORTANTE: los umbrales que elijas deben estar justificados en el
     documento con base en las metricas que observaste en F1 y F4.
+
+    Justificacion:
+        El modelo base tenia Accuracy ~0.91 y F1 ~0.86 en semanas sin fallas
+        (semanas 38-44 de la curva de degradacion).
+        - OK       (F1 >= 0.75 y Accuracy >= 0.80): funcionando bien
+        - WARNING  (F1 >= 0.50 y Accuracy >= 0.65): degradacion notable
+        - CRITICAL (debajo de eso): falla grave, no usar para decisiones
     """
     accuracy  = metrics.get("accuracy", 0)
     precision = metrics.get("precision", 0)
     recall    = metrics.get("recall", 0)
     f1        = metrics.get("f1", 0)
 
-    # TODO: define tus umbrales y retorna el estado correspondiente
-    # Ejemplo de estructura (cambia los valores):
-    #
-    # if f1 >= ???:
-    #     return "OK"
-    # elif f1 >= ???:
-    #     return "WARNING"
-    # else:
-    #     return "CRITICAL"
-
-    raise NotImplementedError("Implementa check_model_health() con tus umbrales justificados")
+    if f1 >= 0.75 and accuracy >= 0.80:
+        return "OK"
+    elif f1 >= 0.50 and accuracy >= 0.65:
+        return "WARNING"
+    else:
+        return "CRITICAL"

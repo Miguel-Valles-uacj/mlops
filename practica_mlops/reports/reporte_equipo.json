@@ -1,0 +1,61 @@
+{
+  "equipo": "Equipo 1 — Luis Flores, Evelyn Bravo, Rogelio Saucedo",
+  "timestamp": "2026-04-20T02:12:38.787899",
+  "metricas_baseline": {
+    "accuracy": 0.4956,
+    "precision": 0.8462,
+    "recall": 0.0466,
+    "f1": 0.0884
+  },
+  "metricas_con_fix": {
+    "accuracy": 0.6422,
+    "precision": 0.8713,
+    "recall": 0.3729,
+    "f1": 0.5223
+  },
+  "mejora": {
+    "accuracy": 0.1466,
+    "precision": 0.0251,
+    "recall": 0.3263,
+    "f1": 0.4339
+  },
+  "semanas_evaluadas": [
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52
+  ],
+  "drift_detectado": {
+    "precio_unitario": {
+      "p_value": 0.0,
+      "statistic": 0.1364,
+      "drift": true
+    },
+    "descuento_pct": {
+      "p_value": 0.0,
+      "statistic": 0.3753,
+      "drift": true
+    },
+    "inventario_prev": {
+      "p_value": 0.0,
+      "statistic": 0.2539,
+      "drift": true
+    },
+    "es_temporada_alta": {
+      "p_value": 0.0,
+      "statistic": 0.5333,
+      "drift": true
+    }
+  }
+}
