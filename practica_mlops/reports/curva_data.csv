@@ -1,0 +1,5 @@
+metrica,baseline,fix,equipo
+Accuracy,0.4956,0.6844,"TSP: alejandro, diego y jorge"
+Precision,0.8462,0.873,"TSP: alejandro, diego y jorge"
+Recall,0.0466,0.4661,"TSP: alejandro, diego y jorge"
+F1,0.0884,0.6077,"TSP: alejandro, diego y jorge"
