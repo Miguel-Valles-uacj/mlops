@@ -12,6 +12,7 @@ Instrucciones:
     5. Corre: python run_pipeline.py --fixed
 """
 
+
 import pandas as pd
 import numpy as np
 from scipy import stats
@@ -22,12 +23,7 @@ from scipy import stats
 # =============================================================================
 
 def get_team_name() -> str:
-    """
-    Retorna el nombre de tu equipo.
-    Ejemplo: return "Equipo 3 — Ana, Luis, Diego"
-    """
-    # TODO: cambia esto con el nombre de tu equipo
-    return "Equipo N"
+    return "Equipo 5"
 
 
 # =============================================================================
@@ -35,35 +31,26 @@ def get_team_name() -> str:
 # =============================================================================
 
 def detect_drift(df_train: pd.DataFrame, df_prod: pd.DataFrame) -> dict:
-    """
-    Detecta data drift comparando la distribucion de cada columna numerica
-    entre los datos de entrenamiento y los de produccion.
-
-    Usa el test de Kolmogorov-Smirnov (scipy.stats.ks_2samp) por columna.
-    Una columna tiene drift si su p-value es menor a 0.05.
-
-    Parametros:
-        df_train: DataFrame con los datos de entrenamiento (columnas numericas)
-        df_prod:  DataFrame con los datos de produccion (columnas numericas)
-
-    Retorna:
-        dict con este formato por cada columna numerica:
-        {
-            "nombre_columna": {
-                "p_value": float,   # valor p del test KS
-                "statistic": float, # estadistico KS
-                "drift": bool       # True si p_value < 0.05
-            },
-            ...
-        }
-    """
-    # TODO: implementa el test KS para cada columna numerica
-    # Pista: usa stats.ks_2samp(df_train[col], df_prod[col])
-    # Pista: las columnas numericas son: precio_unitario, descuento_pct,
-    #        inventario_prev, es_temporada_alta
     resultado = {}
 
-    raise NotImplementedError("Implementa detect_drift()")
+    columnas_numericas = [
+        "precio_unitario",
+        "descuento_pct",
+        "inventario_prev",
+        "es_temporada_alta"
+    ]
+
+    for col in columnas_numericas:
+        if col not in df_train.columns or col not in df_prod.columns:
+            raise ValueError(f"La columna {col} no existe en ambos DataFrames")
+
+        stat, p_value = stats.ks_2samp(df_train[col], df_prod[col])
+
+        resultado[col] = {
+            "p_value": float(p_value),
+            "statistic": float(stat),
+            "drift": bool(p_value < 0.05)
+        }
 
     return resultado
 
@@ -73,35 +60,23 @@ def detect_drift(df_train: pd.DataFrame, df_prod: pd.DataFrame) -> dict:
 # =============================================================================
 
 def fix_data(df_prod: pd.DataFrame, df_train: pd.DataFrame) -> pd.DataFrame:
-    """
-    Recibe los datos de produccion con fallas y retorna un DataFrame corregido.
-
-    Las fallas que debes corregir:
-        - Falla 1: data drift estacional (semanas 45-52 = temporada alta)
-        - Falla 2: precio_unitario llega en USD en vez de MXN
-
-    Parametros:
-        df_prod:  DataFrame de produccion con fallas
-        df_train: DataFrame de entrenamiento limpio (puedes usarlo como referencia)
-
-    Retorna:
-        DataFrame corregido listo para hacer predicciones
-
-    IMPORTANTE:
-        - No modifiques df_prod directamente, trabaja sobre una copia
-        - Si detectas datos invalidos, lanza ValueError con un mensaje descriptivo
-        - No silencies errores con try/except vacios
-    """
     df = df_prod.copy()
 
-    # TODO: implementa las correcciones aqui
-    # Pista 1: para detectar si el precio esta en USD, compara el rango de
-    #          precio_unitario en produccion vs entrenamiento
-    # Pista 2: el tipo de cambio aproximado es 17.5 pesos por dolar
-    # Pista 3: para la temporada alta, revisa la columna es_temporada_alta
-    #          y los valores de semana
+    # ============================
+    # VALIDACIONES
+    # ============================
+    required_cols = ["precio_unitario", "semana"]
+    for col in required_cols:
+        if col not in df.columns:
+            raise ValueError(f"Falta columna {col}")
 
-    raise NotImplementedError("Implementa fix_data()")
+    # ============================
+    # FIX — MONEDA DESDE SEMANA 45
+    # ============================
+    # A partir de semana 45 el precio viene en USD → convertir a MXN
+    df.loc[df["semana"] >= 45, "precio_unitario"] = (
+        df.loc[df["semana"] >= 45, "precio_unitario"] * 17.5
+    )
 
     return df
 
@@ -111,37 +86,16 @@ def fix_data(df_prod: pd.DataFrame, df_train: pd.DataFrame) -> pd.DataFrame:
 # =============================================================================
 
 def check_model_health(metrics: dict) -> str:
-    """
-    Evalua el estado del modelo basandose en sus metricas actuales.
-
-    Parametros:
-        metrics: dict con keys "accuracy", "precision", "recall", "f1"
-                 Cada valor es un float entre 0 y 1.
-
-    Retorna:
-        str: "OK", "WARNING" o "CRITICAL"
-
-    Reglas (define TUS umbrales y justificalos en el documento):
-        - "OK"       si las metricas estan dentro de rangos aceptables
-        - "WARNING"  si alguna metrica empezo a degradarse pero no es critico
-        - "CRITICAL" si el modelo esta fallando gravemente
-
-    IMPORTANTE: los umbrales que elijas deben estar justificados en el
-    documento con base en las metricas que observaste en F1 y F4.
-    """
     accuracy  = metrics.get("accuracy", 0)
     precision = metrics.get("precision", 0)
     recall    = metrics.get("recall", 0)
     f1        = metrics.get("f1", 0)
 
-    # TODO: define tus umbrales y retorna el estado correspondiente
-    # Ejemplo de estructura (cambia los valores):
-    #
-    # if f1 >= ???:
-    #     return "OK"
-    # elif f1 >= ???:
-    #     return "WARNING"
-    # else:
-    #     return "CRITICAL"
-
-    raise NotImplementedError("Implementa check_model_health() con tus umbrales justificados")
+    # Umbrales basados en comportamiento observado:
+    # ~0.90 = bueno, ~0.60 = malo
+    if f1 >= 0.85:
+        return "OK"
+    elif f1 >= 0.70:
+        return "WARNING"
+    else:
+        return "CRITICAL"

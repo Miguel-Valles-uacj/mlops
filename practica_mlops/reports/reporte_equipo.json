@@ -1,0 +1,61 @@
+{
+  "equipo": "Equipo 5",
+  "timestamp": "2026-04-21T21:53:11.588248",
+  "metricas_baseline": {
+    "accuracy": 0.4956,
+    "precision": 0.8462,
+    "recall": 0.0466,
+    "f1": 0.0884
+  },
+  "metricas_con_fix": {
+    "accuracy": 0.6844,
+    "precision": 0.873,
+    "recall": 0.4661,
+    "f1": 0.6077
+  },
+  "mejora": {
+    "accuracy": 0.1888,
+    "precision": 0.0268,
+    "recall": 0.4195,
+    "f1": 0.5193
+  },
+  "semanas_evaluadas": [
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52
+  ],
+  "drift_detectado": {
+    "precio_unitario": {
+      "p_value": 0.9266250937782978,
+      "statistic": 0.029722222222222223,
+      "drift": false
+    },
+    "descuento_pct": {
+      "p_value": 1.322463038466996e-41,
+      "statistic": 0.37527777777777777,
+      "drift": true
+    },
+    "inventario_prev": {
+      "p_value": 5.056118966093877e-19,
+      "statistic": 0.2538888888888889,
+      "drift": true
+    },
+    "es_temporada_alta": {
+      "p_value": 4.5719935772230425e-86,
+      "statistic": 0.5333333333333333,
+      "drift": true
+    }
+  }
+}
