@@ -26,8 +26,7 @@ def get_team_name() -> str:
     Retorna el nombre de tu equipo.
     Ejemplo: return "Equipo 3 — Ana, Luis, Diego"
     """
-    # TODO: cambia esto con el nombre de tu equipo
-    return "Equipo N"
+    return "Equipo 1"
 
 
 # =============================================================================
@@ -58,12 +57,18 @@ def detect_drift(df_train: pd.DataFrame, df_prod: pd.DataFrame) -> dict:
         }
     """
     # TODO: implementa el test KS para cada columna numerica
-    # Pista: usa stats.ks_2samp(df_train[col], df_prod[col])
+    # Pista: usa stats.ks_2samp(df_train[col], df_prod[col]) OK
     # Pista: las columnas numericas son: precio_unitario, descuento_pct,
-    #        inventario_prev, es_temporada_alta
+    #        inventario_prev, es_temporada_alta OK
     resultado = {}
-
-    raise NotImplementedError("Implementa detect_drift()")
+    columnas_numericas = ["precio_unitario", "descuento_pct", "inventario_prev", "es_temporada_alta"]
+    for col in columnas_numericas:
+        ks_stat, p_val = stats.ks_2samp(df_train[col], df_prod[col])
+        resultado[col] = {
+            "p_value": p_val,
+            "statistic": ks_stat,
+            "drift": p_val < 0.05
+        }
 
     return resultado
 
@@ -101,7 +106,14 @@ def fix_data(df_prod: pd.DataFrame, df_train: pd.DataFrame) -> pd.DataFrame:
     # Pista 3: para la temporada alta, revisa la columna es_temporada_alta
     #          y los valores de semana
 
-    raise NotImplementedError("Implementa fix_data()")
+    # Detectar si el precio esta en USD
+    precio_unitario_train = df_train["precio_unitario"]
+    precio_unitario_prod = df["precio_unitario"]
+    if precio_unitario_prod.mean() < precio_unitario_train.mean():
+        df["precio_unitario"] = df["precio_unitario"] * 17.5
+
+    # Detectar temporada alta
+    df["es_temporada_alta"] = df["semana"].apply(lambda x: 1 if x >= 45 else 0)
 
     return df
 
