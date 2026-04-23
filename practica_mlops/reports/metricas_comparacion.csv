@@ -1,0 +1,5 @@
+metrica,baseline,fix,mejora,equipo
+accuracy,0.4956,0.6422,0.1466,"Equipo 8 -- Gabriel, Ian, Angel"
+precision,0.8462,0.8713,0.0251,"Equipo 8 -- Gabriel, Ian, Angel"
+recall,0.0466,0.3729,0.3263,"Equipo 8 -- Gabriel, Ian, Angel"
+f1,0.0884,0.5223,0.4339,"Equipo 8 -- Gabriel, Ian, Angel"
