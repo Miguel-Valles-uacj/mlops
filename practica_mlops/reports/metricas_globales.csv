@@ -1,0 +1,5 @@
+metrica,baseline,fix,equipo
+accuracy,0.4956,0.6844,"Equipo 3 — Omar, Villedo, Blanca"
+precision,0.8462,0.8615,"Equipo 3 — Omar, Villedo, Blanca"
+recall,0.0466,0.4746,"Equipo 3 — Omar, Villedo, Blanca"
+f1,0.0884,0.612,"Equipo 3 — Omar, Villedo, Blanca"
