@@ -22,12 +22,7 @@ from scipy import stats
 # =============================================================================
 
 def get_team_name() -> str:
-    """
-    Retorna el nombre de tu equipo.
-    Ejemplo: return "Equipo 3 — Ana, Luis, Diego"
-    """
-    # TODO: cambia esto con el nombre de tu equipo
-    return "Equipo N"
+    return "Equipo 9 - Jenni, Jaziel y Eliezer"
 
 
 # =============================================================================
@@ -63,7 +58,18 @@ def detect_drift(df_train: pd.DataFrame, df_prod: pd.DataFrame) -> dict:
     #        inventario_prev, es_temporada_alta
     resultado = {}
 
-    raise NotImplementedError("Implementa detect_drift()")
+    columnas_numericas = df_train.select_dtypes(include=[np.number]).columns
+    
+    for col in columnas_numericas:
+        if col in df_prod.columns:
+            # Prueba KS de scipy.stats
+            stat, p_value = stats.ks_2samp(df_train[col], df_prod[col])
+            
+            resultado[col] = {
+                "p_value": float(p_value),
+                "statistic": float(stat),
+                "drift": bool(p_value < 0.05)
+            }
 
     return resultado
 
@@ -94,14 +100,23 @@ def fix_data(df_prod: pd.DataFrame, df_train: pd.DataFrame) -> pd.DataFrame:
     """
     df = df_prod.copy()
 
-    # TODO: implementa las correcciones aqui
-    # Pista 1: para detectar si el precio esta en USD, compara el rango de
-    #          precio_unitario en produccion vs entrenamiento
-    # Pista 2: el tipo de cambio aproximado es 17.5 pesos por dolar
-    # Pista 3: para la temporada alta, revisa la columna es_temporada_alta
-    #          y los valores de semana
+    # Validacion de no tener valores nulos
+    if df.isnull().values.any():
+        raise ValueError("Los datos de producción contienen valores nulos. No se puede procesar.")
 
-    raise NotImplementedError("Implementa fix_data()")
+    # Falla 1: Data drift estacional semana 45 a 52
+    if 'semana' in df.columns and 'es_temporada_alta' in df.columns:
+        # Forzamos que a partir de la semana 45 el flag de temporada alta sea 1
+        df.loc[df['semana'] >= 45, 'es_temporada_alta'] = 1
+
+    # Falla 2: precio_unitario en USD en vez de MXN
+    if 'precio_unitario' in df.columns:
+        umbral_usd = df_train['precio_unitario'].mean() / 5
+        # Todo lo qe cueste menos de 100 estan en dolares, lo convertimos a pesos
+        mask_usd = df['precio_unitario'] < 100
+        
+        # Multiplicamos por 17.5 solo las filas que cumplen la condición
+        df.loc[mask_usd, 'precio_unitario'] = df.loc[mask_usd, 'precio_unitario'] * 17.5
 
     return df
 
@@ -129,19 +144,13 @@ def check_model_health(metrics: dict) -> str:
     IMPORTANTE: los umbrales que elijas deben estar justificados en el
     documento con base en las metricas que observaste en F1 y F4.
     """
-    accuracy  = metrics.get("accuracy", 0)
-    precision = metrics.get("precision", 0)
-    recall    = metrics.get("recall", 0)
-    f1        = metrics.get("f1", 0)
-
-    # TODO: define tus umbrales y retorna el estado correspondiente
-    # Ejemplo de estructura (cambia los valores):
-    #
-    # if f1 >= ???:
-    #     return "OK"
-    # elif f1 >= ???:
-    #     return "WARNING"
-    # else:
-    #     return "CRITICAL"
-
-    raise NotImplementedError("Implementa check_model_health() con tus umbrales justificados")
+    
+    f1 = metrics.get("f1", 0)
+    recall = metrics.get("recall", 0)
+    
+    if f1 >= 0.80 and recall >= 0.80:
+        return "OK"
+    elif f1 >= 0.65 or recall >= 0.50:
+        return "WARNING"
+    else:
+        return "CRITICAL"

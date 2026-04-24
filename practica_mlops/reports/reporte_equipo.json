@@ -1,0 +1,61 @@
+{
+  "equipo": "Equipo 9 - Jenni, Jaziel y Eliezer",
+  "timestamp": "2026-04-23T21:32:56.747306",
+  "metricas_baseline": {
+    "accuracy": 0.4956,
+    "precision": 0.8462,
+    "recall": 0.0466,
+    "f1": 0.0884
+  },
+  "metricas_con_fix": {
+    "accuracy": 0.6422,
+    "precision": 0.8713,
+    "recall": 0.3729,
+    "f1": 0.5223
+  },
+  "mejora": {
+    "accuracy": 0.1466,
+    "precision": 0.0251,
+    "recall": 0.3263,
+    "f1": 0.4339
+  },
+  "semanas_evaluadas": [
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52
+  ],
+  "drift_detectado": {
+    "precio_unitario": {
+      "p_value": 9.153958304647137e-06,
+      "statistic": 0.1363888888888889,
+      "drift": true
+    },
+    "descuento_pct": {
+      "p_value": 1.322463038466996e-41,
+      "statistic": 0.37527777777777777,
+      "drift": true
+    },
+    "inventario_prev": {
+      "p_value": 5.056118966093877e-19,
+      "statistic": 0.2538888888888889,
+      "drift": true
+    },
+    "es_temporada_alta": {
+      "p_value": 4.5719935772230425e-86,
+      "statistic": 0.5333333333333333,
+      "drift": true
+    }
+  }
+}
