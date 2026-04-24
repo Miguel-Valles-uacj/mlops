@@ -1,0 +1,5 @@
+metrica,baseline,fix
+Accuracy,0.4956,0.6844
+Precision,0.8462,0.8615
+Recall,0.0466,0.4746
+F1,0.0884,0.612
