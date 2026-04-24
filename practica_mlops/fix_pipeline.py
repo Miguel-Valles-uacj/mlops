@@ -155,5 +155,17 @@ def check_model_health(metrics: dict) -> str:
     #     return "WARNING"
     # else:
     #     return "CRITICAL"
-
-    raise NotImplementedError("Implementa check_model_health() con tus umbrales justificados")
+  # Umbrales definidos basados en F1 (métrica balanceada para clasificación):
+    # - OK (F1 >= 0.85): modelo con desempeño excelente, confiable en producción
+    # - WARNING (F1 >= 0.75): degradación moderada, requiere monitoreo e investigación
+    # - CRITICAL (F1 < 0.75): modelo no confiable, requiere reentrenamiento inmediato
+    #
+    # Se prioriza F1 porque balancea precision y recall, evitando sesgos en datos
+    # desbalanceados. También se verifica accuracy como métrica complementaria.
+    
+    if f1 >= 0.85 and accuracy >= 0.80:
+        return "OK"
+    elif f1 >= 0.75 and accuracy >= 0.70:
+        return "WARNING"
+    else:
+        return "CRITICAL"
